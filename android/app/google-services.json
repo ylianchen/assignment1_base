@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "897967595665",
+    "project_id": "mobile-app-development-d1e64",
+    "storage_bucket": "mobile-app-development-d1e64.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:897967595665:android:80cc7b5bc997f6a00f5f30",
+        "android_client_info": {
+          "package_name": "com.example.tweeter"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDWJSKdc9Hlhfmg5if8COvcKp7exTqCkOY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
