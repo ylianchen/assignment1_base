@@ -1,0 +1,2 @@
+C:/Users/ebay/Documents/GitHub/assignment1_base/android/app/.cxx/Debug/6a1x4k6t/x86/CMakeFiles/edit_cache.dir
+C:/Users/ebay/Documents/GitHub/assignment1_base/android/app/.cxx/Debug/6a1x4k6t/x86/CMakeFiles/rebuild_cache.dir
