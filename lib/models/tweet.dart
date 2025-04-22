@@ -7,6 +7,8 @@ class Tweet {
   final String username;
   final String timestamp;
 
+
+
   Tweet({
     this.id,
     required this.title,
@@ -45,3 +47,4 @@ class Tweet {
     );
   }
 }
+

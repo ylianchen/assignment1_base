@@ -24,7 +24,7 @@ class FirebaseService {
       'title': tweet.title,
       'text': tweet.text,
       'username': tweet.username,
-      'timestamp': FieldValue.serverTimestamp(), // 使用服务器时间戳
+      'timestamp': tweet.timestamp,
     });
   }
 }
