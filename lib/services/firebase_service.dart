@@ -9,11 +9,31 @@ class FirebaseService {
   Stream<List<Tweet>> getTweetsStream() {
     return _firestore
         .collection(collectionName)
-        .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) {
-      return snapshot.docs.map((doc) {
+      print('Received ${snapshot.docs.length} tweets from Firebase');
+
+      // Manually sort after receiving data to avoid issues with null timestamps
+      final docs = snapshot.docs.toList();
+      docs.sort((a, b) {
+        final aTimestamp = a.data()['timestamp'];
+        final bTimestamp = b.data()['timestamp'];
+
+        // Handle null timestamps
+        if (aTimestamp == null && bTimestamp == null) return 0;
+        if (aTimestamp == null) return 1;
+        if (bTimestamp == null) return -1;
+
+        // Compare timestamps
+        if (aTimestamp is Timestamp && bTimestamp is Timestamp) {
+          return bTimestamp.compareTo(aTimestamp);
+        }
+        return 0;
+      });
+
+      return docs.map((doc) {
         final data = doc.data();
+        print('Tweet data: $data');
 
         // Convert Firestore Timestamp to String
         String timestamp;
