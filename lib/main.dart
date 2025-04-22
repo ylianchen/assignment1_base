@@ -1,13 +1,14 @@
-// lib/main.dart
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:tweeter/firebase_options.dart';
 import 'package:tweeter/pages/home_page.dart';
 
 Future<void> main() async {
+
   WidgetsFlutterBinding.ensureInitialized();
 
-  // This ensures Firebase is initialized before the app starts
+
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );

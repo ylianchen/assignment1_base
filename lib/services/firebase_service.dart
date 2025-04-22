@@ -1,58 +1,89 @@
-// lib/services/firebase_service.dart
+
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:tweeter/models/tweet.dart';
 
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final String _collectionName = 'tweets';
 
-  // Get a stream of tweets that updates in real-time
+
+  CollectionReference get tweetsCollection =>
+      _firestore.collection('tweets');
+
+  // Get stream of tweets
   Stream<List<Tweet>> getTweets() {
-    print("Setting up tweets stream...");
-    return _firestore
-        .collection(_collectionName)
-        .orderBy('timestamp', descending: true) // Sort by newest first
-        .snapshots()
-        .map((snapshot) {
-      print("Got snapshot with ${snapshot.docs.length} documents");
-      final tweets = snapshot.docs.map((doc) {
-        print("Converting doc ${doc.id}");
-        return Tweet.fromFirestore(doc);
-      }).toList();
+    try {
+      return tweetsCollection
+          .orderBy('timestamp', descending: true)
+          .snapshots()
+          .map((snapshot) {
+        return snapshot.docs.map((doc) {
+          try {
+            Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
 
-      print("Top 5 tweets after sorting:");
-      for (var i = 0; i < (tweets.length > 5 ? 5 : tweets.length); i++) {
-        print("${i + 1}. Title: ${tweets[i].title}, Timestamp: ${tweets[i].timestamp}");
-      }
-      print("Total tweets after conversion and sorting: ${tweets.length}");
+            // Debug print
+            print('Processing document: ${doc.id}');
+            print('Document data: $data');
 
-      // Just for debugging
-      final test = tweets.where((t) => t.title == 'test117').toList();
-      if (test.isNotEmpty) {
-        print("Found test117 in final list! Timestamp: ${test.first.timestamp}");
-      }
 
-      return tweets;
-    });
+            String timestampStr;
+            var timestamp = data['timestamp'];
+
+            if (timestamp == null) {
+              timestampStr = DateTime.now().toIso8601String();
+              print('Timestamp is null, using current time');
+            } else if (timestamp is Timestamp) {
+              timestampStr = timestamp.toDate().toIso8601String();
+              print('Converted Timestamp to: $timestampStr');
+            } else if (timestamp is String) {
+              timestampStr = timestamp;
+              print('Using timestamp string: $timestampStr');
+            } else {
+              timestampStr = DateTime.now().toIso8601String();
+              print('Unknown timestamp type: ${timestamp.runtimeType}, using current time');
+            }
+
+            return Tweet(
+              id: doc.id,
+              title: data['title'] ?? '',
+              text: data['text'] ?? '',
+              username: data['username'] ?? '',
+              timestamp: timestampStr,
+            );
+          } catch (e) {
+            print('Error converting document ${doc.id}: $e');
+            // Return a placeholder tweet on error
+            return Tweet(
+              id: doc.id,
+              title: 'Error loading tweet',
+              text: 'Could not load tweet data',
+              username: 'unknown',
+            );
+          }
+        }).toList();
+      });
+    } catch (e) {
+      print('Error in getTweets(): $e');
+      return Stream.value([]);
+    }
   }
 
-  // Add a new tweet to the database
+
   Future<void> addTweet(Tweet tweet) async {
     try {
-      print("Adding tweet: $tweet");
+      print('Adding tweet: ${tweet.title}');
 
-      // Use server timestamp to ensure consistent sorting
-      await _firestore.collection(_collectionName).add({
+      await tweetsCollection.add({
         'title': tweet.title,
         'text': tweet.text,
         'username': tweet.username,
-        'timestamp': FieldValue.serverTimestamp(), // Important for sorting!
+        'timestamp': FieldValue.serverTimestamp(),
       });
 
-      print('Tweet successfully added to Firebase!');
+      print('Tweet added successfully');
     } catch (e) {
       print('Error adding tweet: $e');
-      throw e;
+      rethrow;
     }
   }
 }

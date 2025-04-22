@@ -15,7 +15,7 @@
       <change beforePath="$PROJECT_DIR$/lib/models/tweet.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/models/tweet.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/pages/home_page.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/pages/home_page.dart" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/lib/services/firebase_service.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/services/firebase_service.dart" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/lib/widgets/tweet_list.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/tweet_list.dart" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/lib/widgets/tweet_card.dart" beforeDir="false" afterPath="$PROJECT_DIR$/lib/widgets/tweet_card.dart" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
