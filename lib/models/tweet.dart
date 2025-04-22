@@ -19,6 +19,8 @@ class Tweet {
   // Factory method to create a Tweet from a Firestore document
   factory Tweet.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
+    print('RAW DATA for tweet: $data');
+
     final dynamic timestampData = data['timestamp'];
     String formattedTimestamp;
 
@@ -46,5 +48,11 @@ class Tweet {
       username: data['username'] ?? '',
       timestamp: formattedTimestamp,
     );
+  }
+
+  // Converting a tweet for debugging
+  @override
+  String toString() {
+    return 'Tweet: $title by $username at $timestamp';
   }
 }

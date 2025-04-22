@@ -18,6 +18,12 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _usernameController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    print("HomePage initialized");
+  }
+
+  @override
   void dispose() {
     _titleController.dispose();
     _textController.dispose();
@@ -120,20 +126,25 @@ class _HomePageState extends State<HomePage> {
       body: StreamBuilder<List<Tweet>>(
         stream: _firebaseService.getTweets(),
         builder: (context, snapshot) {
+          print("StreamBuilder state: ${snapshot.connectionState}");
+
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: CircularProgressIndicator());
           }
 
           if (snapshot.hasError) {
+            print("StreamBuilder error: ${snapshot.error}");
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            print("StreamBuilder: No data");
             return Center(child: Text('No tweets yet!'));
           }
 
           // Success! We have tweets, so display them
           final tweets = snapshot.data!;
+          print("StreamBuilder: Received ${tweets.length} tweets");
           return TweetList(tweets: tweets);
         },
       ),

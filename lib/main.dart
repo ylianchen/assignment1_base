@@ -6,9 +6,12 @@ import 'package:tweeter/pages/home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // This ensures Firebase is initialized before the app starts
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
   runApp(const TweeterApp());
 }
 
