@@ -1,4 +1,4 @@
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 class Tweet {
   final String? id;
@@ -6,8 +6,6 @@ class Tweet {
   final String text;
   final String username;
   final String timestamp;
-
-
 
   Tweet({
     this.id,
@@ -17,34 +15,43 @@ class Tweet {
     String? timestamp,
   }) : this.timestamp = timestamp ?? DateTime.now().toIso8601String();
 
-  factory Tweet.fromMap(String id, Map<String, dynamic> map) {
-    // 处理timestamp字段，它可能是Timestamp类型
-    String timestamp;
-    final timestampData = map['timestamp'];
+  // Create a Tweet from Firestore data
+  factory Tweet.fromFirestore(Map<String, dynamic> data, String docId) {
+    // Handle both String and Timestamp types for timestamp
+    String timestampStr;
 
-    if (timestampData is String) {
-      timestamp = timestampData;
-    } else if (timestampData != null) {
-      // Firebase返回的Timestamp类型转换为DateTime再转为字符串
-      try {
-        final dateTime = (timestampData as dynamic).toDate();
-        timestamp = dateTime.toIso8601String();
-      } catch (e) {
-        // 转换失败则使用当前时间
-        timestamp = DateTime.now().toIso8601String();
-      }
+    if (data['timestamp'] is Timestamp) {
+      // Convert Firestore Timestamp to ISO string
+      timestampStr = (data['timestamp'] as Timestamp).toDate().toIso8601String();
+      print('Converted Timestamp for tweet: ${data['title']}');
+    } else if (data['timestamp'] is String) {
+      // Use the string directly
+      timestampStr = data['timestamp'];
+      print('Used String timestamp for tweet: ${data['title']}');
     } else {
-      // 如果没有时间戳数据，使用当前时间
-      timestamp = DateTime.now().toIso8601String();
+      // Fallback to current time
+      timestampStr = DateTime.now().toIso8601String();
+      print('Used fallback timestamp for tweet: ${data['title']}');
     }
 
+    print('Timestamp after conversion: $timestampStr for ${data['title']}');
+
     return Tweet(
-      id: id,
-      title: map['title'] ?? '',
-      text: map['text'] ?? '',
-      username: map['username'] ?? '',
-      timestamp: timestamp,
+      id: docId,
+      title: data['title'] ?? '',
+      text: data['text'] ?? '',
+      username: data['username'] ?? '',
+      timestamp: timestampStr,
     );
   }
-}
 
+  // Convert to a map for Firestore
+  Map<String, dynamic> toMap() {
+    return {
+      'title': title,
+      'text': text,
+      'username': username,
+      'timestamp': FieldValue.serverTimestamp(),
+    };
+  }
+}

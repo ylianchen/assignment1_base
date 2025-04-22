@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'package:tweeter/firebase_options.dart';
 import 'package:tweeter/pages/home_page.dart';
+import 'package:firebase_core/firebase_core.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options: const FirebaseOptions(
+      apiKey: 'AIzaSyDWJSKdc9Hlhfmg5if8COvcKp7exTqCkOY',
+      appId: '1:897967595665:android:80cc7b5bc997f6a00f5f30',
+      messagingSenderId: '897967595665',
+      projectId: 'mobile-app-development-d1e64',
+      storageBucket: 'mobile-app-development-d1e64.firebasestorage.app',
+    ),
   );
+
   runApp(const TweeterApp());
 }
 
