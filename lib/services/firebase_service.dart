@@ -3,28 +3,55 @@ import 'package:tweeter/models/tweet.dart';
 
 class FirebaseService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final String collectionName = 'tweets';
 
-  // 获取tweets的流，以便实时更新
+  // Get tweets as a stream
   Stream<List<Tweet>> getTweetsStream() {
     return _firestore
-        .collection('tweets')
-        .orderBy('timestamp', descending: true) // 按时间降序排列
+        .collection(collectionName)
+        .orderBy('timestamp', descending: true)
         .snapshots()
         .map((snapshot) {
       return snapshot.docs.map((doc) {
         final data = doc.data();
-        return Tweet.fromMap(doc.id, data);
+
+        // Convert Firestore Timestamp to String
+        String timestamp;
+        if (data['timestamp'] != null) {
+          if (data['timestamp'] is Timestamp) {
+            timestamp = (data['timestamp'] as Timestamp).toDate().toIso8601String();
+          } else if (data['timestamp'] is String) {
+            timestamp = data['timestamp'];
+          } else {
+            timestamp = DateTime.now().toIso8601String();
+          }
+        } else {
+          timestamp = DateTime.now().toIso8601String();
+        }
+
+        return Tweet(
+          id: doc.id,
+          title: data['title'] ?? '',
+          text: data['text'] ?? '',
+          username: data['username'] ?? '',
+          timestamp: timestamp,
+        );
       }).toList();
     });
   }
 
-  // 添加新tweet到Firebase
+  // Add a new tweet to Firebase
   Future<void> addTweet(Tweet tweet) async {
-    await _firestore.collection('tweets').add({
-      'title': tweet.title,
-      'text': tweet.text,
-      'username': tweet.username,
-      'timestamp': tweet.timestamp,
-    });
+    try {
+      await _firestore.collection(collectionName).add({
+        'title': tweet.title,
+        'text': tweet.text,
+        'username': tweet.username,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      print('Error adding tweet: $e');
+      rethrow;
+    }
   }
 }

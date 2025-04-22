@@ -1,12 +1,8 @@
-// lib/pages/home_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:tweeter/models/tweet.dart';
 import 'package:tweeter/services/firebase_service.dart';
 import 'package:tweeter/widgets/tweet_list.dart';
-import 'package:tweeter/pages/create_tweet_page.dart';
 
-// 将HomePage改为StatefulWidget
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
@@ -14,16 +10,106 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-// 创建HomePage的State类
 class _HomePageState extends State<HomePage> {
-  final FirebaseService firebaseService = FirebaseService();
+  final FirebaseService _firebaseService = FirebaseService();
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _textController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
 
-  // 添加刷新方法
-  void _refreshTweets() {
-    setState(() {
-      // 仅调用setState来刷新UI
-      // StreamBuilder会自动重新获取数据
-    });
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _textController.dispose();
+    _usernameController.dispose();
+    super.dispose();
+  }
+
+  void _showAddTweetDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Create Tweet'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                TextField(
+                  controller: _titleController,
+                  decoration: const InputDecoration(
+                    labelText: 'Title',
+                    hintText: 'Enter tweet title',
+                  ),
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _textController,
+                  decoration: const InputDecoration(
+                    labelText: 'Text',
+                    hintText: 'Enter tweet text',
+                  ),
+                  maxLines: 3,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                    hintText: 'Enter your username',
+                  ),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: _submitTweet,
+              child: const Text('Post'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _submitTweet() async {
+    if (_titleController.text.isEmpty ||
+        _textController.text.isEmpty ||
+        _usernameController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all fields')),
+      );
+      return;
+    }
+
+    final tweet = Tweet(
+      title: _titleController.text,
+      text: _textController.text,
+      username: _usernameController.text,
+    );
+
+    try {
+      await _firebaseService.addTweet(tweet);
+      _titleController.clear();
+      _textController.clear();
+      _usernameController.clear();
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tweet posted successfully!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error posting tweet: $e')),
+        );
+      }
+    }
   }
 
   @override
@@ -31,43 +117,29 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Tweeter'),
-        // 在AppBar中添加刷新按钮
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _refreshTweets,
-            tooltip: 'Refresh tweets',
-          ),
-        ],
       ),
       body: StreamBuilder<List<Tweet>>(
-        stream: firebaseService.getTweetsStream(),
+        stream: _firebaseService.getTweetsStream(),
         builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
           if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           }
 
-          if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('No tweets found'));
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
           }
 
-          return TweetList(tweets: snapshot.data!);
+          final tweets = snapshot.data ?? [];
+
+          if (tweets.isEmpty) {
+            return const Center(child: Text('No tweets yet. Be the first to post!'));
+          }
+
+          return TweetList(tweets: tweets);
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const CreateTweetPage())
-          ).then((_) {
-            // 当从CreateTweetPage返回时刷新列表
-            _refreshTweets();
-          });
-        },
+        onPressed: _showAddTweetDialog,
         child: const Icon(Icons.add),
       ),
     );
